@@ -41,6 +41,20 @@ The generator used is a dense convolutional Unet with 5 residual connections. Th
 
 # Loss evolution
 
+<p align="center">
+  <img src="images/loss_generator.png" alt="My Image 1" style="display:inline-block;width:45%;">
+  <img src="images/loss_discriminator.png" alt="My Image 2" style="display:inline-block;width:45%;">
+</p>
+
+<p align="center">
+  <img src="images/loss_discriminator_fake.png" alt="My Image 1" style="display:inline-block;width:45%;">
+  <img src="images/loss_discriminator_real.png" alt="My Image 2" style="display:inline-block;width:45%;">
+</p>
+
+<p align="center">
+  <img src="images/loss_discriminator_structures.png" alt="My Image 1" style="display:inline-block;width:45%;">
+  <img src="images/losses.png" alt="My Image 1" style="display:inline-block;width:45%;">
+</p>
 
 
 
