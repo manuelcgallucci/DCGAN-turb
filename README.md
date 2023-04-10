@@ -22,7 +22,9 @@ Here are shown the structure function s2, flatness and skewness of the real and 
 <p align="center">
   <em>Structure functions and histogram of the increments</em>
 </p>
+
 # Training scheme 
+
 The generator used is a dense convolutional Unet with 5 residual connections. The discriminators were 3 dense nets for the s2, skewness and flatness and one big CNN composed of three individual parts for different sections of the same sample for the scales discriminator. 
 <p align="center">
   <img src="images/training_scheme.png" alt="My Image 1" style="display:inline-block;width:49%;">
