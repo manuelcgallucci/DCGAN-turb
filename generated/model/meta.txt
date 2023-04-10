@@ -1,0 +1,19 @@
+lr: 0.002
+epochs: 400
+batch_size: 8
+k_epochs_d: 2
+k_epochs_g: 1
+out_dir: ./generated/lkfQq8
+alpha: 0.0
+beta: 1.0
+gamma: 1.0
+weights: tensor([1.0000, 1.0000, 0.5000, 0.5000, 0.5000, 0.5000, 0.2500, 0.2500, 0.2500,
+        0.2500, 0.2500, 0.2500, 0.2500, 0.2500])
+data_type_loading: full
+data_type_stride: 32768
+len_samples: 32768
+train_file_type: Training done for a combined discriminator loss with structure functions
+
+reg: 
+Discriminator ?? I assume discriminator MultiNet16_4 with structure v1 or v2
+Generator: CNNBig concat
