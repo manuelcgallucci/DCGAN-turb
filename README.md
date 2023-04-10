@@ -1,6 +1,10 @@
 # DCGAN-turb
 Implementation of dense convolutional GANs to generate 1D turbulent velocity signals using a multi discriminator approach.
 
+# Using the models 
+
+
+
 # Results
 Here are shown the structure function s2, flatness and skewness of the real and the generated samples. As we observe the results are really good in the inertial and integral domains but the results are not yet optimal in the dissipative domain. 
 
