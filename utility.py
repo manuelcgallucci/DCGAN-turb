@@ -1,4 +1,3 @@
-
 import numpy as np
 import torch
 import random, string
@@ -95,7 +94,7 @@ def calculate_histogram(signal, scales, n_bins, device="cpu", normalize_incrs=Tr
     Nreal=signal.size()[0]
 
     histograms = np.zeros((Nreal, n_bins))
-    bins = np.zeros((Nreal, n_bins))
+    bins = np.zeros((Nreal, n_bins+1))
     # We normalize the image by centering and standarizing it
     tmp = torch.zeros(signal.shape, device=device)    
     for ir in range(Nreal):
