@@ -1,4 +1,3 @@
-#622A2A#FFFFFFimport torch
 import numpy as np 
 import matplotlib.pyplot as plt
 
@@ -27,7 +26,7 @@ def main():
 
 	# plot_history_structureTraining()
 	# plot_compare_structure(eta=5, L=2350, len_=samples_len)
-	plot_histogram(n_samples=128, len_=samples_len, scales=[2,4,8,16,128,256,1024,4096,8192,16384])
+	plot_histogram(n_samples=64, len_=samples_len, scales=[2,4,8,16,128,256,1024,4096,8192,16384])
 
 def plot_history_structureTraining():
 
