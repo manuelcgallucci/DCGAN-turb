@@ -10,8 +10,7 @@ import utility as ut
 
 import torch
 from model_generator import CNNGeneratorBigConcat as CNNGenerator
-# from model_discriminator import DiscriminatorMultiNet16 as Discriminator
-#data_dir = './generated/U2lVlk/'
+
 
 data_dir = "./generated/model/"
 temp_dir = "./temp/"
@@ -23,7 +22,6 @@ def main():
 	print("Plotting histogram and structure functions with an output length of:", samples_len)
     
 	# plot_real_data()
-
 	# plot_history_structureTraining()
 	# plot_compare_structure(eta=5, L=2350, len_=samples_len)
 	plot_histogram(n_samples=64, len_=samples_len, scales=[2,4,8,16,128,256,1024,4096,8192,16384])
@@ -128,26 +126,6 @@ def plot_structure(n_samples=64, len_=2**15, edge=4096, device="cuda"):
     plt.grid()
     if save: plt.savefig(data_dir + "s2_samples.png")
     if display: plt.show()
-
-    # generated_samples = torch.cumsum(generated_samples, dim=2)[:,:,edge:-edge]
-
-    # plt.figure()
-    # for k in range(n_samples):
-    #     plt.plot(generated_samples[k,0,:].cpu(), linewidth=1.0)
-    # plt.title("Generated cumsum samples")
-    # if save: plt.savefig(data_dir + "s2_gen_samples_cumsum.png")
-    # if display: plt.show()
-
-    # s2 = ut.calculate_s2(generated_samples, scales, device=device).cpu()
-
-    # plt.figure()
-    # for k in range(n_samples):
-    #     plt.plot(np.log(scales), s2[k,0,:], color=color, linewidth=1.0)
-    # plt.plot(np.log(scales), torch.mean(s2[:,0,:], dim=0), 'r', linewidth=2.0)
-    # plt.title("Structure function on the cumsum samples")
-    # plt.xlabel("scales (log)")
-    # if save: plt.savefig(data_dir + "s2_cumsum_samples.png")
-    # if display: plt.show()
 
 def plot_compare_structure(n_samples=64, len_=2**15, edge=4096, eta=None, L=None, device="cuda"):
     data_train = np.load('./data/data.npy')

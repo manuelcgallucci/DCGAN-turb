@@ -1,11 +1,15 @@
 import numpy as np
 import torch
 import random, string
-import os 
+import json
+from pathlib import Path
 
 # Tested at 50 tests, 32 batch size, 2**15 length, 100 scales
 # 0.017 gpu
 def calculate_s2(signal, scales, device="cpu"):
+    if isinstance(signal, np.ndarray):
+        signal = torch.Tensor(signal)
+        signal = signal[:, None, :]
     '''
     signal is the signal of study and scales is an array with the values of the scales of analysis
     '''      
@@ -21,7 +25,9 @@ def calculate_s2(signal, scales, device="cpu"):
     for idx, scale in enumerate(scales):
         s2[:,:,idx] = torch.log(torch.mean(torch.square(tmp[:,:,scale:]-tmp[:,:,:-scale]), dim=2))
         
-    return s2
+    if device != "cpu":
+        s2 = s2.detach().cpu()
+    return s2[:,0,:].numpy()
 
 
 def calculate_structure(signal, scales, device="cpu"):
@@ -112,20 +118,44 @@ def calculate_histogram(signal, scales, n_bins, device="cpu", normalize_incrs=Tr
 
     return histograms, bins
 
+def calculate_structure_noInplace_new(signal, scales, device="cpu"):
+    '''
+    signal is the signal of study and scales is an array with the values of the scales of analysis
+    '''      
+    # This contains in order, log(s2), skewness, log(flatness / 3)
+    structure_s2 = torch.zeros((signal.shape[0],len(scales)), dtype=torch.float32, device=device)
+    strucutre_skewness = torch.zeros((signal.shape[0],len(scales)), dtype=torch.float32, device=device)
+    strucutre_flatness = torch.zeros((signal.shape[0],len(scales)), dtype=torch.float32, device=device)
+
+    # We normalize the image by centering and standarizing it
+    Nreal=signal.size()[0]
+    tmp = torch.zeros(signal.shape, device=device)    
+    for ir in range(Nreal):
+        nanstdtmp = torch.sqrt(torch.nanmean(torch.abs(signal[ir]-torch.nanmean(signal[ir]))**2))
+        tmp[ir,0,:] = (signal[ir]-torch.nanmean(signal[ir]))/nanstdtmp   
+
+    for idx, scale in enumerate(scales):
+        incrs = tmp[:,0,scale:]-tmp[:,0,:-scale]
+        structure_s2[:,idx] = torch.log(torch.mean(torch.square(incrs), dim=1))
+        
+        stdincrs = torch.std(incrs, dim=1)
+        incrsnorm = (incrs - torch.nanmean(incrs, dim=1)[:,None]) / stdincrs[:,None] # Batch x Length
+        
+        strucutre_skewness[:,idx] = torch.nanmean(torch.pow(incrsnorm,3), dim=1)
+        strucutre_flatness[:,idx] = torch.log(torch.nanmean(torch.pow(incrsnorm, 4), dim=1) / 3)
+
+    return structure_s2, strucutre_skewness, strucutre_flatness
 
 
-def get_dir(dir, length=6):
-    name = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-    path_ = os.path.join(dir, name)
-    while os.path.isfile(path_):
-        name = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-        path_ = os.path.join(dir, name)
-    os.mkdir(path_)
-    return path_
+def get_structure_scales(length: int=100):
+    nv=10
+    uu=2**np.arange(0,13,1/nv)
+    scales=np.unique(uu.astype(int))
+    return scales[:length]
 
-def save_meta(meta_dict, meta_dir, meta_name="meta.txt"):
-    with open( os.path.join(meta_dir, meta_name), "w") as f:
-        for k, v in meta_dict.items():
-            f.write("{:s}: ".format(k) + str(v) + '\n')
+def get_uuid(length=6):
+    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
-        f.write("\nreg: \n")
+def save_meta(meta_file_path: Path, meta_dict: dict):
+    with open(str(meta_file_path), "w") as f:
+        json.dump(meta_dict, f, indent=1)

@@ -1,5 +1,12 @@
-# DCGAN-turb
+# DCGAN-turb     
 Implementation of dense convolutional GANs to generate 1D turbulent velocity signals using a multi discriminator approach.
+
+<div style="display: flex; justify-content: space-between;">
+    <a href="https://iopscience.iop.org/journal/2632-2153" target="_blank"><img src="https://img.shields.io/badge/Visit-Journal-informational?style=flat-square&logoColor=white&color=blue" alt="Visit Journal" height="20"></a>
+    <a href="https://github.com/manuelcgallucci/DCGAN-turb" target="_blank"><img src="https://img.shields.io/badge/View-Publication-informational?style=flat-square&logoColor=white&color=green" alt="View Publication" height="20"></a>
+</div>
+
+
 # Model usage
 
 # Results

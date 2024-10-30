@@ -1,34 +1,6 @@
 from torch import nn
 import torch
 
-###  Discriminators 
-class DiscriminatorStructures(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.dense_output = nn.Sequential(
-            
-            nn.Linear(100, 64),
-			nn.LeakyReLU(0.2),
-
-            nn.Linear(64, 64),
-			nn.LeakyReLU(0.2),
-
-            nn.Linear(64, 64),
-			nn.LeakyReLU(0.2),
-
-            nn.Linear(64, 64),
-			nn.LeakyReLU(0.2),
-
-            nn.Linear(64, 32),
-			nn.LeakyReLU(0.2),
-
-			nn.Linear(32, 1),
-            nn.Sigmoid()
-		)
-        
-    def forward(self, x):
-        return self.dense_output(x)
-    
 class DiscriminatorStructures_v2(nn.Module):
     def __init__(self):
         super().__init__()
@@ -190,8 +162,6 @@ class DiscriminatorMultiNet16_4(nn.Module):
             nn.Sigmoid()
 		)
 
-
-		
     def forward(self, x):
 
         p16384_0 = self.cnn16384(x[:,:,:16384])

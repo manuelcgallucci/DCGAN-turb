@@ -2,8 +2,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import torch
 
-def loadDataset(type="full", stride=None, len_samples = 2**15):
-    
+def loadDataset(type="full", stride=None, len_samples = 2**15):    
     if type == "full" and stride != None:
         data_train = torch.Tensor(np.load('./data/full_signal.npy'))
         dataset = DatasetCustomFull(data_train, stride, len_samples=len_samples)
@@ -17,7 +16,6 @@ def loadDataset(type="full", stride=None, len_samples = 2**15):
 
     return dataset, n_samples, len_samples
 
-# Define DataLoader
 class DatasetCustom(Dataset):
     def __init__(self, data):
         # Data should be an array 
