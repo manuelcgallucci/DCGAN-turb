@@ -154,19 +154,19 @@ class CNNGeneratorBigConcat(nn.Module):
 
 		out = self.cnnTrans64(out)
 		out = self.upsample2(out)
-		out = torch.cat((out[:,:,0:-1], res32), dim=1) 
+		out = torch.cat((out, res32), dim=1) 
 
 		out = self.cnnTrans32(out)
 		out = self.upsample2(out)
-		out = torch.cat((out, res16), dim=1) 
+		out = torch.cat((out[:,:,0:-1], res16), dim=1) 
 
 		out = self.cnnTrans16(out)
 		out = self.upsample2(out)
-		out = torch.cat((out[:,:,0:-1], res8), dim=1) 
+		out = torch.cat((out, res8), dim=1) 
 
 		out = self.cnnTrans8(out)
 		out = self.upsample2(out)
-		out = torch.cat((out, res4), dim=1) 
+		out = torch.cat((out[:,:,0:-1], res4), dim=1) 
 
 		out = self.cnnTrans4(out)
 		out = self.upsample2(out)

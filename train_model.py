@@ -22,6 +22,7 @@ import utility as ut
 from model_generator import CNNGeneratorBigConcat as CNNGenerator
 from model_discriminator import DiscriminatorMultiNet16_4 as Discriminator
 from model_discriminator import DiscriminatorStructures_v2 as DiscriminatorStructures
+from pathlib import Path
 
 plot_metadata_training = True
 # nohup python3 train_model_step_discriminator_structures.py > nohup_1.out &
@@ -44,6 +45,7 @@ def combine_losses_expAvg(loss_samples, loss_s2, loss_skewness, loss_flatness):
 	return  (alpha_samples * loss_samples + alpha_s2 * loss_s2 + alpha_skewness * loss_skewness + alpha_flatness * loss_flatness) / (alpha_samples + alpha_s2 + alpha_skewness + alpha_flatness)
 
 def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, gamma, weigths, data_type, data_stride, len_samples,out_dir, noise_size=(1,2**15)):
+	out_dir = Path(out_dir)
 
 	n_weights = weights.size()[0]
 	# alpha serves as the parameter in the generator regularization loss
@@ -299,14 +301,14 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 		# print("\t\t\t G: {:7.4f}, reg: {:7.4f} \t\t Fake: {:7.4f}, Real: {:7.4f}".format(loss_g_array[epoch], loss_reg_array[epoch], loss_d_fake_array[epoch], loss_d_real_array[epoch]))
 		sys.stdout.flush()
 
-		# if epoch%5 == 0:
-		#     if plot_metadata_training:
-		#         n_samples = 64
-		#         noise = torch.randn((n_samples, noise_size[0], noise_size[1]), device=device)
-		#         with torch.no_grad():
-		#             generated_samples = generator(noise)
-		#             np.savez(out_dir+"/samples_epoch_{:d}.npz".format(epoch), generated_samples.cpu().detach().numpy())
-	 
+		if epoch % 5 == 0:
+			if plot_metadata_training:
+				n_samples = 64
+				noise = torch.randn((n_samples, noise_size[0], noise_size[1]), device=device)
+				with torch.no_grad():
+					generated_samples = generator(noise)
+					np.savez(out_dir / "samples_epoch_{:d}.npz".format(epoch), generated_samples.cpu().detach().numpy())
+
 	end_time = time()
 	print("Total time elapsed for training:", end_time - start_time)
 
@@ -315,9 +317,9 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 	with torch.no_grad():
 		generated_samples = generator(noise)
 
-	np.savez(out_dir+"/samples.npz", generated_samples.cpu().detach().numpy())
+	np.savez(out_dir / "samples.npz", generated_samples.cpu().detach().numpy())
 
-	np.savez(out_dir+"/metaEvo.npz", \
+	np.savez(out_dir / "metaEvo.npz", \
 			loss_fake = loss_fake_array.cpu().detach().numpy(), \
 			loss_fake_s2 = loss_fake_s2_array.cpu().detach().numpy(), \
 			loss_fake_skewness = loss_fake_skewness_array.cpu().detach().numpy(), \
@@ -339,64 +341,66 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 			loss_discriminator = loss_discriminator_array.cpu().detach().numpy(), \
 			loss_generator = loss_generator_array.cpu().detach().numpy())
 
-	torch.save(generator.state_dict(), out_dir + '/generator.pt')
-	torch.save(discriminator.state_dict(), out_dir + '/discriminator.pt')
+	torch.save(generator.state_dict(), out_dir / 'generator.pt')
+	torch.save(discriminator.state_dict(), out_dir / 'discriminator.pt')
 
-	with open( os.path.join(out_dir, "time.txt"), "w") as f:
+	with open( out_dir / "time.txt", "w") as f:
 		f.write("Total time to train in seconds: {:f}".format(end_time - start_time))
 
 	return 
 
 # nohup python3 train_model.py > nohup_1.out &
 if __name__ == '__main__':
-    lr = 0.002
-    epochs = 400
-    batch_size = 16
-    k_epochs_d = 2
-    k_epochs_g = 1
+	lr = 0.002
+	epochs = 200
+	batch_size = 16
+	k_epochs_d = 2
+	k_epochs_g = 1
 
-    out_dir = './generated'
-    alpha = 0.0 # regularization parameter
-    beta = 1.0 # generator loss multiplier 0.5
-    gamma = 1.0 # discriminator loss multiplier 3.0
-    edge = -1 # Deprecreated
+	out_dir = 'C:\\Users\\cgall\\OneDrive\\Desktop\\Github-copy\\DCGAN-turb\\generated'
+	alpha = 0.0 # regularization parameter
+	beta = 1.0 # generator loss multiplier 0.5
+	gamma = 1.0 # discriminator loss multiplier 3.0
+	edge = -1 # Deprecreated
 
-    data_type = "full" # full samples from the original data 
+	data_type = "full" # full samples from the original data 
 
-    data_stride = 2**15
-    len_samples = 2**15
-    weights = torch.Tensor([1,1,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25])
-    
-
-    # data_stride = 2**16
-    # len_samples = 2**16
-    # weights = torch.Tensor([1,1,1,1,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25])
+	data_stride = 2**15
+	len_samples = 2**15
+	weights = torch.Tensor([1,1,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25])
 
 
-    out_dir = ut.get_dir(out_dir)
-    # out_dir = os.path.join(out_dir, 'YPkIwG')
-    
-    
-    print(out_dir)
+	# data_stride = 2**16
+	# len_samples = 2**16
+	# weights = torch.Tensor([1,1,1,1,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25])
 
-    meta_dict = {
-        "lr":lr,
-        "epochs":epochs,
-        "batch_size":batch_size,
-        "k_epochs_d":k_epochs_d,
-        "k_epochs_g":k_epochs_g,
-        "out_dir":out_dir,
-        "alpha":alpha,
-        "beta":beta,
-        "gamma":gamma,
-        "weights":weights,
-        "data_type_loading":data_type,
-        "data_type_stride":data_stride,
-        "len_samples":len_samples,
-        "train_file_type": "Training done for a combined discriminator loss with structure functions",
-    }
 
-    ut.save_meta(meta_dict, out_dir)
-    train_model(lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, gamma, weights, data_type, data_stride, len_samples, out_dir, noise_size=(1, len_samples))
+	out_dir = os.path.join(out_dir, ut.get_uuid())
+	# out_dir = os.path.join(out_dir, 'YPkIwG')
+
+	os.mkdir(out_dir)
+	print(out_dir)
+
+	meta_dict = {
+		"lr":lr,
+		"epochs":epochs,
+		"batch_size":batch_size,
+		"k_epochs_d":k_epochs_d,
+		"k_epochs_g":k_epochs_g,
+		"out_dir":out_dir,
+		"alpha":alpha,
+		"beta":beta,
+		"gamma":gamma,
+		"weights":weights,
+		"data_type_loading":data_type,
+		"data_type_stride":data_stride,
+		"len_samples":len_samples,
+		"train_file_type": "Training done for a combined discriminator loss with structure functions",
+	}
+
+	save_dict = meta_dict.copy()
+	save_dict["weights"] = weights.tolist()
+	ut.save_meta(Path(out_dir), save_dict)
+	train_model(lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, gamma, weights, data_type, data_stride, len_samples, out_dir, noise_size=(1, len_samples))
 
 

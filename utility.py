@@ -157,5 +157,5 @@ def get_uuid(length=6):
     return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
 def save_meta(meta_file_path: Path, meta_dict: dict):
-    with open(str(meta_file_path), "w") as f:
+    with open(meta_file_path / "meta.json", "w") as f:
         json.dump(meta_dict, f, indent=1)

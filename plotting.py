@@ -12,7 +12,7 @@ import torch
 from model_generator import CNNGeneratorBigConcat as CNNGenerator
 
 
-data_dir = "./generated/model/"
+data_dir = "./generated/NcxP8h/" # NcxP8h X2ouEV
 temp_dir = "./temp/"
 save = True
 display = False
@@ -192,7 +192,26 @@ def plot_histogram(n_samples=64, len_=2**15, edge=4096, n_bins=150, scales=[2**x
         generated_samples = generator(noise)
     
     generated_samples = generated_samples[:,:,edge:-edge].cpu()
-    
+
+    plot_samples = generated_samples[:, 0, :]
+    plt.figure()
+    max_k = 4
+    for k in range(plot_samples.shape[0]):
+        if k >= max_k: break
+        plt.plot(plot_samples[k, :], linewidth=1.0, alpha=0.7)
+    plt.title("Generated samples")
+    if save: plt.savefig(data_dir + "gen_samples.png")
+    if display: plt.show()
+    return
+    # fig, ax = plt.subplots(8,8)
+    # fig.suptitle('Real samples')
+    # for k, axs in enumerate(fig.axes):
+    #     axs.plot(generated_samples[k, :])
+    #     axs.get_xaxis().set_ticks([])
+    #     axs.get_yaxis().set_ticks([])
+    # if save: plt.savefig(data_dir + "samples_gen.png")
+    # if display: plt.show()
+
     # generated_samples = torch.Tensor(np.load(data_dir + 'samples.npz')["arr_0"])
     # Histogram for the real samples
     #generated_samples = torch.Tensor(np.load('./data/data.npy')[:,None,:])
