@@ -111,6 +111,15 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 
 	loss_discriminator_array = torch.zeros((epochs))
 
+	acc_real_array = torch.zeros((epochs))
+	acc_fake_array = torch.zeros((epochs))
+	acc_real_s2_array = torch.zeros((epochs))
+	acc_fake_s2_array = torch.zeros((epochs))
+	acc_real_skewness_array = torch.zeros((epochs))
+	acc_fake_skewness_array = torch.zeros((epochs))
+	acc_real_flatness_array = torch.zeros((epochs))
+	acc_fake_flatness_array = torch.zeros((epochs))
+
 	loss_g_array = torch.zeros((epochs))
 	loss_g_s2_array = torch.zeros((epochs))
 	loss_g_skewness_array = torch.zeros((epochs))
@@ -184,9 +193,12 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 				structure_f = data_structure_functions[batch_idx].to(device)
 				# structure_f = data_structure_functions[batch_idx]
 				
-				loss_real_s2 = criterion_BCE(discriminator_s2(structure_f[:,0,:])[:,0], target_ones[int(batch_idx == last_batch_idx)])
-				loss_real_skewness = criterion_BCE(discriminator_skewness(structure_f[:,1,:])[:,0], target_ones[int(batch_idx == last_batch_idx)])
-				loss_real_flatness = criterion_BCE(discriminator_flatness(structure_f[:,2,:])[:,0], target_ones[int(batch_idx == last_batch_idx)])
+				prediction_real_s2 = discriminator_s2(structure_f[:,0,:])[:,0]
+				loss_real_s2 = criterion_BCE(prediction_real_s2, target_ones[int(batch_idx == last_batch_idx)])
+				prediction_real_skewness = discriminator_skewness(structure_f[:,1,:])[:,0]
+				loss_real_skewness = criterion_BCE(prediction_real_skewness, target_ones[int(batch_idx == last_batch_idx)])
+				prediction_real_flatness = discriminator_flatness(structure_f[:,2,:])[:,0]
+				loss_real_flatness = criterion_BCE(prediction_real_flatness, target_ones[int(batch_idx == last_batch_idx)])
 				
 				loss_real_total = 0.5 * loss_real + 1.0 * (loss_real_s2 + loss_real_skewness + loss_real_flatness)
 				# loss_real_total = combine_losses_expAvg( loss_real, loss_real_s2, loss_real_skewness, loss_real_flatness)
@@ -203,9 +215,12 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 				
 				structure_f = ut.calculate_structure_noInplace(fake_samples, scales, device=device)
 
-				loss_fake_s2 = criterion_BCE(discriminator_s2(structure_f[:,0,:])[:,0], target_zeros[int(batch_idx == last_batch_idx)])
-				loss_fake_skewness = criterion_BCE(discriminator_skewness(structure_f[:,1,:])[:,0], target_zeros[int(batch_idx == last_batch_idx)])
-				loss_fake_flatness = criterion_BCE(discriminator_flatness(structure_f[:,2,:])[:,0], target_zeros[int(batch_idx == last_batch_idx)])
+				prediction_fake_s2 = discriminator_s2(structure_f[:,0,:])[:,0]
+				loss_fake_s2 = criterion_BCE(prediction_fake_s2, target_zeros[int(batch_idx == last_batch_idx)])
+				prediction_fake_skewness = discriminator_skewness(structure_f[:,1,:])[:,0]
+				loss_fake_skewness = criterion_BCE(prediction_fake_skewness, target_zeros[int(batch_idx == last_batch_idx)])
+				prediction_fake_flatness = discriminator_flatness(structure_f[:,2,:])[:,0]
+				loss_fake_flatness = criterion_BCE(prediction_fake_flatness, target_zeros[int(batch_idx == last_batch_idx)])
 
 				
 				loss_fake_total = 0.5 * loss_fake + 1.0 * (loss_fake_s2 + loss_fake_skewness + loss_fake_flatness)
@@ -238,7 +253,17 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 				loss_fake_total_array[epoch] += loss_fake_total.item() / k_epochs_d
 				
 				loss_discriminator_array[epoch] += loss_discriminator.item() / k_epochs_d
-				
+			
+			acc_real_array[epoch] += torch.mean((mean_prediction_real >= 0.5).float()).item()
+			acc_real_s2_array[epoch] += torch.mean((prediction_real_s2 >= 0.5).float()).item()
+			acc_real_skewness_array[epoch] += torch.mean((prediction_real_skewness >= 0.5).float()).item()
+			acc_real_flatness_array[epoch] += torch.mean((prediction_real_flatness >= 0.5).float()).item()
+
+			acc_fake_array[epoch] += torch.mean((mean_prediction_fake < 0.5).float()).item()
+			acc_fake_s2_array[epoch] += torch.mean((prediction_fake_s2 < 0.5).float()).item()
+			acc_fake_skewness_array[epoch] += torch.mean((prediction_fake_skewness < 0.5).float()).item()
+			acc_fake_flatness_array[epoch]+= torch.mean((prediction_fake_flatness < 0.5).float()).item()
+
 			# print("Fake mean predictions:", mean_prediction_fake)
 			# print("Real mean predictions:", mean_prediction_real)
 			# print("\tPredictions:", p16384_0, "\n\t",p16384_1)
@@ -292,7 +317,7 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 				loss_generator_array[epoch] += loss_generator.item() / k_epochs_g
 
 			# print("time:", time() - start_time_batch)
-
+			break
 		# THESE HAVE TO BE DEVIDED BY THE NUMBER OF BATCHES
 		#acc_d_fake_array[epoch] = acc_d_fake_array[epoch] / data_samples
 		#acc_d_real_array[epoch] = acc_d_real_array[epoch] / data_samples
@@ -303,11 +328,20 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 
 		if epoch % 5 == 0:
 			if plot_metadata_training:
+				temp_out_dir = out_dir / f"epoch_{epoch}"
+				temp_out_dir.mkdir(exist_ok=False)
+				
 				n_samples = 64
 				noise = torch.randn((n_samples, noise_size[0], noise_size[1]), device=device)
 				with torch.no_grad():
 					generated_samples = generator(noise)
-					np.savez(out_dir / "samples_epoch_{:d}.npz".format(epoch), generated_samples.cpu().detach().numpy())
+					np.savez(temp_out_dir / "samples_epoch_{:d}.npz".format(epoch), generated_samples.cpu().detach().numpy())
+
+				torch.save(generator.state_dict(), temp_out_dir / 'generator.pt')
+				torch.save(discriminator.state_dict(), temp_out_dir / 'discriminator.pt')
+				torch.save(discriminator_s2.state_dict(), temp_out_dir / 'discriminator_s2.pt')
+				torch.save(discriminator_skewness.state_dict(), temp_out_dir / 'discriminator_skewness.pt')
+				torch.save(discriminator_flatness.state_dict(), temp_out_dir / 'discriminator_flatness.pt')
 
 	end_time = time()
 	print("Total time elapsed for training:", end_time - start_time)
@@ -339,10 +373,26 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 			loss_g_total = loss_g_total_array.cpu().detach().numpy(), \
 			
 			loss_discriminator = loss_discriminator_array.cpu().detach().numpy(), \
-			loss_generator = loss_generator_array.cpu().detach().numpy())
+			loss_generator = loss_generator_array.cpu().detach().numpy(), \
+			
+			acc_real= acc_real_array.cpu().detach().numpy(),
+			acc_real_s2 = acc_real_s2_array.cpu().detach().numpy(),
+			acc_real_skewness = acc_real_skewness_array.cpu().detach().numpy(),
+			acc_real_flatness = acc_real_flatness_array.cpu().detach().numpy(),
+			
+			acc_fake= acc_fake_array.cpu().detach().numpy(),
+			acc_fake_s2 = acc_fake_s2_array.cpu().detach().numpy(),
+			acc_fake_skewness = acc_fake_skewness_array.cpu().detach().numpy(),
+			acc_fake_flatness = acc_fake_flatness_array.cpu().detach().numpy(),
+			
+			)
 
 	torch.save(generator.state_dict(), out_dir / 'generator.pt')
 	torch.save(discriminator.state_dict(), out_dir / 'discriminator.pt')
+	torch.save(discriminator_s2.state_dict(), out_dir / 'discriminator_s2.pt')
+	torch.save(discriminator_skewness.state_dict(), out_dir / 'discriminator_skewness.pt')
+	torch.save(discriminator_flatness.state_dict(), out_dir / 'discriminator_flatness.pt')
+
 
 	with open( out_dir / "time.txt", "w") as f:
 		f.write("Total time to train in seconds: {:f}".format(end_time - start_time))
@@ -352,7 +402,7 @@ def train_model( lr, epochs, batch_size, k_epochs_d, k_epochs_g, alpha, beta, ga
 # nohup python3 train_model.py > nohup_1.out &
 if __name__ == '__main__':
 	lr = 0.002
-	epochs = 200
+	epochs = 50
 	batch_size = 16
 	k_epochs_d = 2
 	k_epochs_g = 1

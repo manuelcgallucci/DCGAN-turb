@@ -12,7 +12,7 @@ import torch
 from model_generator import CNNGeneratorBigConcat as CNNGenerator
 
 
-data_dir = "./generated/NcxP8h/" # NcxP8h X2ouEV
+data_dir = "./generated/1kfxxj/" # NcxP8h X2ouEV VBxhh7
 temp_dir = "./temp/"
 save = True
 display = False
@@ -22,9 +22,9 @@ def main():
 	print("Plotting histogram and structure functions with an output length of:", samples_len)
     
 	# plot_real_data()
-	# plot_history_structureTraining()
+	plot_history_structureTraining()
 	# plot_compare_structure(eta=5, L=2350, len_=samples_len)
-	plot_histogram(n_samples=64, len_=samples_len, scales=[2,4,8,16,128,256,1024,4096,8192,16384])
+	# plot_histogram(n_samples=64, len_=samples_len, scales=[2,4,8,16,128,256,1024,4096,8192,16384])
 
 def plot_history_structureTraining():
 
@@ -91,6 +91,48 @@ def plot_history_structureTraining():
 	plt.legend(["Generator", "Discriminator"])
 	if save: plt.savefig(data_dir + "losses.png")
 	if display: plt.show()
+
+	plt.figure()
+	plt.plot(history["acc_real"])
+	plt.plot(history["acc_fake"])
+	plt.title("Accuray of the sample discriminator")
+	plt.legend(["Real", "Face"])
+	if save: plt.savefig(data_dir + "acc_samples.png")
+	if display: plt.show()
+
+	plt.figure()
+	plt.plot(history["acc_real"])
+	plt.plot(history["acc_fake"])
+	plt.title("Accuray of the sample discriminator")
+	plt.legend(["Real", "Fake"])
+	if save: plt.savefig(data_dir + "acc_samples.png")
+	if display: plt.show()
+     
+	plt.figure()
+	plt.plot(history["acc_real_s2"])
+	plt.plot(history["acc_fake_s2"])
+	plt.title("Accuray of the s2 discriminator")
+	plt.legend(["Real", "Fake"])
+	if save: plt.savefig(data_dir + "acc_s2.png")
+	if display: plt.show()
+     
+	plt.figure()
+	plt.plot(history["acc_real_skewness"])
+	plt.plot(history["acc_fake_skewness"])
+	plt.title("Accuray of the skewness discriminator")
+	plt.legend(["Real", "Fake"])
+	if save: plt.savefig(data_dir + "acc_skewness.png")
+	if display: plt.show()
+
+	plt.figure()
+	plt.plot(history["acc_real_flatness"])
+	plt.plot(history["acc_fake_flatness"])
+	plt.title("Accuray of the flatness discriminator")
+	plt.legend(["Real", "Fake"])
+	if save: plt.savefig(data_dir + "acc_flatness.png")
+	if display: plt.show()
+
+
 
 def plot_structure(n_samples=64, len_=2**15, edge=4096, device="cuda"):
     color=np.array([166, 178, 255])/255.0
